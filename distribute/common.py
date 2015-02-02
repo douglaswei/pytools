@@ -1,20 +1,21 @@
-
 # coding:utf-8 
 
 import pexpect
+import logging
+from multiprocessing.dummy import Pool
 
-def ssh_cmd(host, user_name, pwd, cmd):
+def ssh_cmd(host, user_name, pwd, cmd, retry_times=3, timeout=5):
     status = -1
     ssh = pexpect.spawn('ssh %s@%s "%s"' % (user_name, host, cmd))
     try: 
-        remote_status = ssh.expect(['password:', 'continue connecting (yes/no)?'], timeout=5) 
-        if remote_status == 0 : 
-            ssh.sendline(pwd) 
+        remote_status = ssh.expect(['password:', 'continue connecting (yes/no)?'], timeout=timeout) 
+        if remote_status == 0:
+            pass
         elif remote_status == 1: 
             ssh.sendline('yes') 
             ssh.expect('password: ') 
             ssh.sendline(passwd) 
-            ssh.sendline(cmd) 
+        ssh.sendline(cmd) 
         remote_output = ssh.read() 
         status = 0 
     except pexpect.EOF, e: 
@@ -25,5 +26,28 @@ def ssh_cmd(host, user_name, pwd, cmd):
         remote_output =  "TIMEOUT" + str(e)
         ssh.close() 
         status = -2 
-    return status, remote_output
+    if retry_times < 0 && status != 0:
+        return status, remote_output
+    else
+        return ssh_cmd(host, user_name, pwd, cmd, retry_times-1, timeout)
 
+
+def ssh_cmds(host, user_name, pwd, cmds, timeoout=5):
+    o_status = 0
+    o_outputs = []
+    for cmd in cmds:
+        status, output = ssh_cmd(host, user_name, pwd, cmd, timeoout)
+        logging.info('host[%s] cmd[%s] status[%d] output[%s]' % (host, cmd, status, output))
+        o_outputs.append((host, cmd, output))
+        if status != 0:
+            logging.error('cmd failed:host[%s] cmd[%s]' % (host, cmd))
+            o_status = -1
+            break 
+    return o_status, o_outputs
+
+
+def distributed_ssh_cmd(host_list, user_name, pwd, cmds):
+    pool = Pool()
+    res = poo.map(ssh_cmds, ((host, user_name, pwd, cmds) for host in host_list))
+    print res
+    
