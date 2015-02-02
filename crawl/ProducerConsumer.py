@@ -63,7 +63,6 @@ class TConsumer(threading.Thread):
 def handler(signum, frame):
     global is_exit
     logging.info('caught kill signal, set is_exit')
-    is_exit = True
     sys.exit(-1)
 
 
