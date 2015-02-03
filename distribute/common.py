@@ -14,7 +14,7 @@ def ssh_cmd(host, user_name, pwd, cmd, retry_times=3, timeout=5):
         elif remote_status == 1: 
             ssh.sendline('yes') 
             ssh.expect('password: ') 
-            ssh.sendline(passwd) 
+        ssh.sendline(pwd) 
         ssh.sendline(cmd) 
         remote_output = ssh.read() 
         status = 0 
@@ -26,9 +26,9 @@ def ssh_cmd(host, user_name, pwd, cmd, retry_times=3, timeout=5):
         remote_output =  "TIMEOUT" + str(e)
         ssh.close() 
         status = -2 
-    if retry_times < 0 && status != 0:
+    if retry_times < 0 or status == 0:
         return status, remote_output
-    else
+    else:
         return ssh_cmd(host, user_name, pwd, cmd, retry_times-1, timeout)
 
 
@@ -46,8 +46,15 @@ def ssh_cmds(host, user_name, pwd, cmds, timeoout=5):
     return o_status, o_outputs
 
 
-def distributed_ssh_cmd(host_list, user_name, pwd, cmds):
+def distributed_ssh_cmds(host_list, user_name, pwd, cmds):
     pool = Pool()
-    res = poo.map(ssh_cmds, ((host, user_name, pwd, cmds) for host in host_list))
-    print res
+    results = []
+    for host in host_list:
+        #ssh_cmds(host, user_name, pwd, cmds)
+        x = pool.apply_async(ssh_cmds, (host, user_name, pwd, cmds))
+        results.append(x.get())
+    pool.close()
+    pool.join()
+    return results
+
     
