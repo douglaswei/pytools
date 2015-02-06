@@ -112,9 +112,9 @@ def server_loop():
     while True:
         client_socket, addr = server.accept()
         print 'get new connection'
-        #client_thread = threading.Thread(target=client_handler, args=(client_socket,))
-        client_handler(client_socket)
-        #client_thread.start()
+        #client_handler(client_socket)
+        client_thread = threading.Thread(target=client_handler, args=(client_socket,))
+        client_thread.start()
 
 def run_command(command):
     command = command.rstrip()
