@@ -1,0 +1,20 @@
+.DS_Store
+.ipynb_checkpoints
+build
+node_modules
+*.pyc
+__pycache__
+*.swp
+.vscode/
+cmake_build/
+.idea/**
+Podfile.lock
+*.pbxproj
+*.xcworkspacedata
+
+# Android
+.gradle
+.idea
+*.iml
+local.properties
+gradleBuild
