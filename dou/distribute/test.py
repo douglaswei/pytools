@@ -1,4 +1,4 @@
-import distribute.common as com
+import dou.distribute.common as com
 import logging
 
 logging.basicConfig(level=logging.DEBUG, filename='log')
